@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useState } from 'react'
-import { Eye, EyeOff, ArrowRight } from 'lucide-react'
+import { ArrowRight, Eye, EyeOff, Check } from 'lucide-react'
 
 export default function SignupPage() {
   const [showPass, setShowPass] = useState(false)
@@ -11,74 +11,62 @@ export default function SignupPage() {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setLoading(true)
-    // TODO: wire up Supabase auth
-    setTimeout(() => setLoading(false), 1200)
+    setTimeout(() => setLoading(false), 1000)
   }
 
   return (
-    <div className="w-full max-w-sm">
+    <div className="w-full max-w-md">
       <div className="text-center mb-8">
-        <h1
-          className="text-2xl font-bold tracking-tight mb-2"
-          style={{ fontFamily: 'var(--font-display)' }}
-        >
-          Create your account
-        </h1>
-        <p className="text-sm text-muted-foreground">
+        <h1 className="text-3xl font-medium tracking-tight mb-2">Create your account</h1>
+        <p className="text-[14px] text-muted-foreground">
           Already have one?{' '}
-          <Link href="/login" className="text-primary hover:text-primary/80 transition-colors">
+          <Link href="/login" className="text-foreground hover:text-primary transition-colors underline underline-offset-4 decoration-border hover:decoration-primary">
             Sign in
           </Link>
         </p>
       </div>
 
-      <div className="bg-card border border-border rounded-xl p-6 space-y-5">
-        {/* Google OAuth */}
-        <button
-          type="button"
-          className="w-full flex items-center justify-center gap-2.5 bg-surface hover:bg-surface-elevated border border-border text-foreground rounded-md py-2.5 text-sm font-medium transition-colors"
-        >
+      <div className="bg-card/60 backdrop-blur-md border border-border rounded-2xl p-7 shadow-2xl">
+        <button className="w-full h-11 flex items-center justify-center gap-2.5 border border-border bg-background/40 hover:bg-accent transition-colors rounded-lg text-[14px] font-medium">
           <GoogleIcon />
           Continue with Google
         </button>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 my-5">
           <div className="flex-1 h-px bg-border" />
-          <span className="text-xs text-muted-foreground">or</span>
+          <span className="text-[11px] uppercase tracking-wider text-muted-foreground">
+            or
+          </span>
           <div className="flex-1 h-px bg-border" />
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Email
-            </label>
+            <label className="block text-[13px] font-medium">Email</label>
             <input
               type="email"
               placeholder="you@example.com"
               required
-              className="w-full bg-input border border-border rounded-md px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/30 transition-all"
+              className="w-full bg-background border border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/20 outline-none rounded-lg px-3.5 h-11 text-[14px] placeholder:text-muted-foreground/40 transition-all"
             />
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Password
-            </label>
+            <label className="block text-[13px] font-medium">Password</label>
             <div className="relative">
               <input
                 type={showPass ? 'text' : 'password'}
                 placeholder="At least 8 characters"
                 required
                 minLength={8}
-                className="w-full bg-input border border-border rounded-md px-3 py-2.5 pr-10 text-sm text-foreground placeholder:text-muted-foreground/50 outline-none focus:border-primary/60 focus:ring-1 focus:ring-primary/30 transition-all"
+                className="w-full bg-background border border-border focus:border-primary/60 focus:ring-2 focus:ring-primary/20 outline-none rounded-lg px-3.5 h-11 text-[14px] placeholder:text-muted-foreground/40 transition-all pr-10"
               />
               <button
                 type="button"
                 onClick={() => setShowPass(!showPass)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
               >
-                {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showPass ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
               </button>
             </div>
           </div>
@@ -86,22 +74,46 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 disabled:opacity-60 text-primary-foreground py-2.5 rounded-md text-sm font-medium transition-colors"
+            className="w-full h-11 bg-foreground text-background hover:bg-foreground/90 disabled:opacity-60 transition-colors rounded-lg text-[14px] font-medium flex items-center justify-center gap-2 mt-6"
           >
             {loading ? (
-              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              <span className="flex gap-1">
+                <span className="size-1.5 rounded-full bg-background animate-pulse [animation-delay:0ms]" />
+                <span className="size-1.5 rounded-full bg-background animate-pulse [animation-delay:150ms]" />
+                <span className="size-1.5 rounded-full bg-background animate-pulse [animation-delay:300ms]" />
+              </span>
             ) : (
               <>
                 Create account
-                <ArrowRight className="w-3.5 h-3.5" />
+                <ArrowRight className="size-3.5" strokeWidth={2.25} />
               </>
             )}
           </button>
         </form>
+
+        <div className="mt-6 pt-6 border-t border-border space-y-2">
+          {[
+            'No credit card required',
+            '100 messages per day, free forever',
+            'Full memory features included',
+          ].map((s) => (
+            <div key={s} className="flex items-center gap-2 text-[12px] text-muted-foreground">
+              <Check className="size-3.5 text-primary" strokeWidth={2.5} />
+              {s}
+            </div>
+          ))}
+        </div>
       </div>
 
-      <p className="text-center text-xs text-muted-foreground/60 mt-4">
-        Free forever. No credit card required.
+      <p className="text-center text-[12px] text-muted-foreground mt-6">
+        By continuing, you agree to our{' '}
+        <Link href="#" className="hover:text-foreground transition-colors underline underline-offset-2 decoration-border hover:decoration-foreground">
+          Terms
+        </Link>
+        {' '}and{' '}
+        <Link href="#" className="hover:text-foreground transition-colors underline underline-offset-2 decoration-border hover:decoration-foreground">
+          Privacy Policy
+        </Link>
       </p>
     </div>
   )
@@ -109,7 +121,7 @@ export default function SignupPage() {
 
 function GoogleIcon() {
   return (
-    <svg className="w-4 h-4" viewBox="0 0 24 24">
+    <svg className="size-4" viewBox="0 0 24 24">
       <path
         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
         fill="#4285F4"

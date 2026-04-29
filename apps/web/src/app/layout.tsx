@@ -1,32 +1,34 @@
 import type { Metadata } from 'next'
-import { Syne, DM_Sans, JetBrains_Mono } from 'next/font/google'
+import { Geist, Geist_Mono, Instrument_Serif } from 'next/font/google'
 import './globals.css'
 
-const dmSans = DM_Sans({
+const geist = Geist({
   variable: '--font-sans',
   subsets: ['latin'],
   display: 'swap',
 })
 
-const syne = Syne({
-  variable: '--font-display',
-  subsets: ['latin'],
-  display: 'swap',
-})
-
-const jetbrainsMono = JetBrains_Mono({
+const geistMono = Geist_Mono({
   variable: '--font-mono',
   subsets: ['latin'],
   display: 'swap',
 })
 
+const instrumentSerif = Instrument_Serif({
+  variable: '--font-serif',
+  subsets: ['latin'],
+  weight: '400',
+  style: ['normal', 'italic'],
+  display: 'swap',
+})
+
 export const metadata: Metadata = {
-  title: 'Persona — The character chat platform that actually remembers',
+  title: 'Persona — character chat that actually remembers',
   description:
-    'Chat with AI characters that remember. Real lorebooks, pinned memories, transparent context. No silent filters.',
+    'Lorebooks, pinned facts, transparent context. The character chat platform built for power users.',
   openGraph: {
     title: 'Persona',
-    description: 'The character chat platform that actually remembers.',
+    description: 'Character chat that actually remembers.',
     type: 'website',
   },
 }
@@ -35,9 +37,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="en"
-      className={`${dmSans.variable} ${syne.variable} ${jetbrainsMono.variable} dark h-full antialiased`}
+      className={`${geist.variable} ${geistMono.variable} ${instrumentSerif.variable} dark h-full`}
     >
-      <body className="min-h-full">{children}</body>
+      <body className="min-h-full bg-background text-foreground">{children}</body>
     </html>
   )
 }

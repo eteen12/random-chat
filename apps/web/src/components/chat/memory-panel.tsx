@@ -1,7 +1,18 @@
 'use client'
 
 import { useState } from 'react'
-import { ChevronRight, Pin, Trash2, Eye, Zap, BookOpen, Sparkles, History, Brain } from 'lucide-react'
+import {
+  ChevronDown,
+  Pin,
+  Trash2,
+  Eye,
+  Zap,
+  BookOpen,
+  Sparkles,
+  History,
+  Brain,
+  PanelRightClose,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface MemoryItem {
@@ -18,9 +29,11 @@ interface MemoryPanelProps {
   ragSnippets: MemoryItem[]
   recentMessageCount: number
   estimatedTokens: number
+  maxTokens?: number
   onPin?: (item: MemoryItem) => void
   onDelete?: (id: string, type: string) => void
   onViewPrompt?: () => void
+  onClose?: () => void
 }
 
 export function MemoryPanel({
@@ -31,111 +44,118 @@ export function MemoryPanel({
   ragSnippets,
   recentMessageCount,
   estimatedTokens,
+  maxTokens = 8000,
   onPin,
   onDelete,
   onViewPrompt,
+  onClose,
 }: MemoryPanelProps) {
+  const pct = Math.min(100, (estimatedTokens / maxTokens) * 100)
+
   return (
-    <div className="h-full flex flex-col bg-sidebar border-l border-sidebar-border">
+    <div className="h-full flex flex-col bg-card">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-sidebar-border shrink-0">
+      <div className="px-4 h-14 flex items-center justify-between border-b border-border shrink-0">
         <div className="flex items-center gap-2">
-          <Brain className="w-4 h-4 text-primary" />
-          <span
-            className="text-sm font-semibold"
-            style={{ fontFamily: 'var(--font-display)' }}
-          >
-            Memory
-          </span>
+          <Brain className="size-4 text-primary" strokeWidth={2} />
+          <span className="text-[14px] font-medium">Memory</span>
+          <span className="size-1.5 rounded-full bg-primary pulse-soft" />
         </div>
-        <button
-          onClick={onViewPrompt}
-          className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground bg-surface hover:bg-surface-elevated border border-border rounded-md px-2 py-1 transition-colors font-mono"
-          style={{ fontFamily: 'var(--font-mono)' }}
-        >
-          <Eye className="w-3 h-3" />
-          View prompt
-        </button>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={onViewPrompt}
+            className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground bg-background hover:bg-secondary border border-border rounded-md px-2.5 h-7 transition-colors"
+          >
+            <Eye className="size-3" strokeWidth={2} />
+            Inspect
+          </button>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="size-7 rounded-md hover:bg-secondary flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+              title="Close memory panel"
+            >
+              <PanelRightClose className="size-3.5" strokeWidth={2} />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Token meter */}
-      <div className="px-4 py-2 border-b border-sidebar-border shrink-0">
-        <div className="flex items-center justify-between mb-1.5">
-          <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider font-mono">
-            Context usage
+      <div className="px-4 py-3 border-b border-border shrink-0">
+        <div className="flex items-baseline justify-between mb-2">
+          <span className="text-[11px] text-muted-foreground uppercase tracking-wider font-medium">
+            Context
           </span>
-          <span
-            className="text-[11px] text-muted-foreground font-mono"
-            style={{ fontFamily: 'var(--font-mono)' }}
-          >
-            ~{estimatedTokens.toLocaleString()} tokens
+          <span className="text-[12px] font-mono text-foreground tabular-nums">
+            {estimatedTokens.toLocaleString()}
+            <span className="text-muted-foreground"> / {maxTokens.toLocaleString()}</span>
           </span>
         </div>
-        <div className="h-1 bg-border rounded-full overflow-hidden">
+        <div className="h-1 bg-secondary rounded-full overflow-hidden">
           <div
-            className="h-full bg-primary/70 rounded-full transition-all"
-            style={{ width: `${Math.min(100, (estimatedTokens / 8000) * 100)}%` }}
+            className={cn(
+              'h-full rounded-full transition-all',
+              pct < 70 ? 'bg-primary' : pct < 90 ? 'bg-amber-400' : 'bg-destructive'
+            )}
+            style={{ width: `${pct}%` }}
           />
         </div>
       </div>
 
-      {/* Scrollable sections */}
-      <div className="flex-1 overflow-y-auto custom-scroll py-1">
+      {/* Sections */}
+      <div className="flex-1 overflow-y-auto custom-scroll">
         <Section
-          icon={<Zap className="w-3.5 h-3.5 text-yellow-400" />}
-          label="Always-on lore"
+          icon={<Zap className="size-3.5 text-amber-400" strokeWidth={2} />}
+          label="Always-on"
           items={alwaysOnLore}
-          emptyText="No always-on lorebook entries"
+          emptyText="No always-on entries"
           onPin={onPin}
           onDelete={(id) => onDelete?.(id, 'always_on')}
-          accentColor="yellow"
         />
         <Section
-          icon={<Zap className="w-3.5 h-3.5 text-orange-400" />}
-          label="Triggered lore"
+          icon={<Zap className="size-3.5 text-orange-400" strokeWidth={2} />}
+          label="Triggered"
           items={triggeredLore}
           emptyText="No triggered entries"
-          itemMeta={(item) => item.meta ? `via "${item.meta}"` : undefined}
+          itemMeta={(item) => (item.meta ? `via "${item.meta}"` : undefined)}
           onPin={onPin}
           onDelete={(id) => onDelete?.(id, 'triggered')}
-          accentColor="orange"
         />
         <Section
-          icon={<Pin className="w-3.5 h-3.5 text-green-400" />}
+          icon={<Pin className="size-3.5 text-primary" strokeWidth={2} />}
           label="Pinned"
           items={pinned}
-          emptyText="Pin a message to always remember it"
+          emptyText="Pin a message to remember it forever"
           onDelete={(id) => onDelete?.(id, 'pinned')}
-          accentColor="green"
         />
         <Section
-          icon={<Sparkles className="w-3.5 h-3.5 text-blue-400" />}
-          label="Extracted facts"
+          icon={<Sparkles className="size-3.5 text-blue-400" strokeWidth={2} />}
+          label="Extracted"
           items={extractedFacts}
           emptyText="Facts will appear after a few turns"
           onPin={onPin}
           onDelete={(id) => onDelete?.(id, 'fact')}
-          accentColor="blue"
         />
         <Section
-          icon={<History className="w-3.5 h-3.5 text-purple-400" />}
-          label="Recalled history"
+          icon={<History className="size-3.5 text-purple-400" strokeWidth={2} />}
+          label="Recalled"
           items={ragSnippets}
           emptyText="No relevant history recalled"
           itemMeta={(item) => item.meta}
           onDelete={(id) => onDelete?.(id, 'rag')}
-          accentColor="purple"
         />
 
-        {/* Recent messages count */}
-        <div className="px-4 py-2 mt-1">
-          <div className="flex items-center gap-2 px-2 py-2 rounded-md bg-surface/50">
-            <BookOpen className="w-3.5 h-3.5 text-muted-foreground/60 shrink-0" />
-            <span
-              className="text-[11px] text-muted-foreground font-mono"
-              style={{ fontFamily: 'var(--font-mono)' }}
-            >
-              {recentMessageCount} recent messages verbatim
+        {/* Recent messages */}
+        <div className="px-4 py-3 mt-1 border-t border-border">
+          <div className="flex items-center gap-2 px-3 py-2.5 rounded-md bg-secondary/40">
+            <BookOpen className="size-3.5 text-muted-foreground" strokeWidth={2} />
+            <span className="text-[12px] text-muted-foreground">
+              <span className="text-foreground font-medium">{recentMessageCount}</span>{' '}
+              recent messages
+            </span>
+            <span className="ml-auto text-[10px] font-mono text-muted-foreground/60">
+              verbatim
             </span>
           </div>
         </div>
@@ -152,7 +172,6 @@ function Section({
   itemMeta,
   onPin,
   onDelete,
-  accentColor,
 }: {
   icon: React.ReactNode
   label: string
@@ -161,56 +180,56 @@ function Section({
   itemMeta?: (item: MemoryItem) => string | undefined
   onPin?: (item: MemoryItem) => void
   onDelete?: (id: string) => void
-  accentColor: string
 }) {
   const [open, setOpen] = useState(true)
 
   return (
-    <div className="px-3 py-1">
+    <div className="border-b border-border/50 last:border-b-0">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 w-full px-1 py-1.5 rounded-md hover:bg-sidebar-accent transition-colors group"
+        className="flex items-center gap-2 w-full px-4 h-9 hover:bg-accent/50 transition-colors group"
       >
-        <ChevronRight
-          className={cn(
-            'w-3 h-3 text-muted-foreground/50 shrink-0 transition-transform duration-150',
-            open && 'rotate-90'
-          )}
-        />
         {icon}
-        <span className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider flex-1 text-left">
+        <span className="text-[12px] font-medium text-foreground/90 flex-1 text-left">
           {label}
         </span>
         <span
           className={cn(
-            'text-[10px] rounded-full px-1.5 py-0.5 font-mono',
-            items.length > 0 ? 'text-foreground bg-border' : 'text-muted-foreground/50'
+            'text-[10px] font-mono px-1.5 py-0.5 rounded tabular-nums',
+            items.length > 0
+              ? 'bg-primary/10 text-primary border border-primary/20'
+              : 'text-muted-foreground/40'
           )}
-          style={{ fontFamily: 'var(--font-mono)' }}
         >
           {items.length}
         </span>
+        <ChevronDown
+          className={cn(
+            'size-3.5 text-muted-foreground transition-transform duration-150',
+            !open && '-rotate-90'
+          )}
+          strokeWidth={2}
+        />
       </button>
 
       {open && (
-        <div className="mt-1 space-y-1 mb-1">
+        <div className="pb-2">
           {items.length === 0 ? (
-            <p
-              className="text-[11px] text-muted-foreground/40 px-3 py-1.5 italic font-mono"
-              style={{ fontFamily: 'var(--font-mono)' }}
-            >
+            <p className="text-[12px] text-muted-foreground/50 px-4 py-2 italic">
               {emptyText}
             </p>
           ) : (
-            items.map((item) => (
-              <MemoryItemRow
-                key={item.id}
-                item={item}
-                meta={itemMeta?.(item)}
-                onPin={onPin ? () => onPin(item) : undefined}
-                onDelete={onDelete ? () => onDelete(item.id) : undefined}
-              />
-            ))
+            <div className="space-y-px px-2">
+              {items.map((item) => (
+                <MemoryItemRow
+                  key={item.id}
+                  item={item}
+                  meta={itemMeta?.(item)}
+                  onPin={onPin ? () => onPin(item) : undefined}
+                  onDelete={onDelete ? () => onDelete(item.id) : undefined}
+                />
+              ))}
+            </div>
           )}
         </div>
       )}
@@ -229,52 +248,33 @@ function MemoryItemRow({
   onPin?: () => void
   onDelete?: () => void
 }) {
-  const [hovered, setHovered] = useState(false)
-
   return (
-    <div
-      className="group flex gap-2 rounded-md px-2 py-2 hover:bg-sidebar-accent transition-colors cursor-default"
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-    >
+    <div className="group flex gap-2 rounded-md px-2 py-2 hover:bg-accent/50 transition-colors">
       <div className="flex-1 min-w-0">
-        <p
-          className="text-[11px] text-foreground/80 leading-relaxed break-words font-mono"
-          style={{ fontFamily: 'var(--font-mono)' }}
-        >
+        <p className="text-[12px] text-foreground/90 leading-relaxed break-words">
           {item.content}
         </p>
         {meta && (
-          <p
-            className="text-[10px] text-muted-foreground/50 mt-0.5 font-mono"
-            style={{ fontFamily: 'var(--font-mono)' }}
-          >
-            {meta}
-          </p>
+          <p className="text-[10px] text-muted-foreground/60 mt-0.5 font-mono">{meta}</p>
         )}
       </div>
-      <div
-        className={cn(
-          'flex items-start gap-0.5 shrink-0 transition-opacity',
-          hovered ? 'opacity-100' : 'opacity-0'
-        )}
-      >
+      <div className="flex items-start gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
         {onPin && (
           <button
             onClick={onPin}
-            className="p-1 rounded text-muted-foreground hover:text-foreground hover:bg-border transition-colors"
-            title="Pin this memory"
+            className="size-6 rounded text-muted-foreground hover:text-primary hover:bg-primary/10 flex items-center justify-center transition-colors"
+            title="Pin"
           >
-            <Pin className="w-3 h-3" />
+            <Pin className="size-3" strokeWidth={2} />
           </button>
         )}
         {onDelete && (
           <button
             onClick={onDelete}
-            className="p-1 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+            className="size-6 rounded text-muted-foreground hover:text-destructive hover:bg-destructive/10 flex items-center justify-center transition-colors"
             title="Remove"
           >
-            <Trash2 className="w-3 h-3" />
+            <Trash2 className="size-3" strokeWidth={2} />
           </button>
         )}
       </div>
